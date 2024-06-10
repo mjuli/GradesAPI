@@ -26,30 +26,18 @@ namespace NotasAlunos.Service
             return output;
         }
 
-        internal async Task<List<StudentGradesOutputDto>> GetStudentsWithGrades(AppDbContext context)
+        public async Task<List<StudentGradesOutputDto>> GetStudentsWithGrades(AppDbContext context)
         {
-            List<Grade> grades = await context.Grades.ToListAsync();
-            List<Subject> subjects = await context.Subjects.ToListAsync();
-            List<Student> students = await context.Students.ToListAsync();
+            var resultado = await (from student in context.Students
+                                   join grade in context.Grades on student.IdStudent equals grade.IdStudent
+                                   join subject in context.Subjects on grade.IdSubject equals subject.IdSubject
+                                   group new { Grade = grade, Subject = subject } by student.StudentName into g
+                                   select new StudentGradesOutputDto(
+                                       g.Key,
+                                       g.Select(x => new SubjectGradesDto(x.Subject.SubjectName, x.Grade.Media)).ToList()
+                                   )).ToListAsync();
 
-            var resultado = from student in students
-                            join grade in grades on student.IdStudent equals grade.IdStudent
-                            join subject in subjects on grade.IdSubject equals subject.IdSubject
-                            group new { Grade = grade, Subject = subject } by student.StudentName into g
-                            select new
-                            {
-                                StudentName = g.Key,
-                                Grades = g.Select(x => new { x.Subject.SubjectName, x.Grade.Media })
-                            };
-
-            return resultado.Select(item =>
-                new StudentGradesOutputDto(
-                    item.StudentName,
-                    item.Grades.Select(grade =>
-                        new SubjectGradesDto(grade.SubjectName, grade.Media)
-                    ).ToList()
-                )
-            ).ToList();
+            return resultado;
         }
     }
 }

@@ -11,18 +11,30 @@ namespace NotasAlunos.Service
         public async Task<StudentGradesOutputDto> SaveGrades(StudentGradesInputDto input, AppDbContext context)
         {
             Student? student = await context.Students.SingleOrDefaultAsync(s => input.StudentName == s.StudentName);
-            if (student == null)
-                student = new Student(input.StudentName);
-            
-            Subject? subject = await context.Subjects.SingleOrDefaultAsync(s => s.SubjectName == input.StudentName);
-            if(subject == null)
-                subject = new Subject(input.SubjectName);
-                
-            Grade grade = new Grade(input.Grade1, input.Grade2, input.Grade3, subject.IdSubject, student.IdStudent);
+            Subject? subject = await context.Subjects.SingleOrDefaultAsync(s => s.SubjectName == input.SubjectName);
+            Grade grade = null;
 
-            await context.Students.AddAsync(student);
-            await context.Subjects.AddAsync(subject);
-            await context.Grades.AddAsync(grade);
+            if (student != null && subject != null){
+                grade = await context.Grades.SingleOrDefaultAsync(g => g.IdStudent == student.IdStudent && g.IdSubject == subject.IdSubject);
+                grade.Values = new List<int> { input.Grade1, input.Grade2, input.Grade3 };
+                grade.Media = grade.GetMedia();
+            } 
+            
+            if (student == null) {
+                student = new Student(input.StudentName);
+                await context.Students.AddAsync(student);
+            } 
+            
+            if(subject == null) {
+                subject = new Subject(input.SubjectName);
+                await context.Subjects.AddAsync(subject);
+            }
+
+            if (grade == null){
+                grade = new Grade(input.Grade1, input.Grade2, input.Grade3, subject.IdSubject, student.IdStudent);
+                await context.Grades.AddAsync(grade);
+            }
+
             await context.SaveChangesAsync();
 
             SubjectGradesDto subjectGrades = new SubjectGradesDto(subject.SubjectName, grade.Media);

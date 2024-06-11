@@ -12,7 +12,7 @@ namespace NotasAlunos.Entities
         {
             IdGrade = Guid.NewGuid();
             Values = new List<int> { grade1, grade2, grade3 };
-            Media = GetMedia(Values);
+            Media = GetMedia();
             IdSubject = idSubject;
             IdStudent = idStudent;
             DataInclusao = DateTime.Now;
@@ -28,12 +28,12 @@ namespace NotasAlunos.Entities
         public int IdSessaoOperacao { get; set; }
         public int IdSessao { get; set; }
 
-        private string GetMedia(List<int> grades)
+        public string GetMedia()
         {
             string result = "A";
 
-            int sum = grades.Aggregate(0, (total, grade) => total + grade);
-            double media = (double)sum / grades.Count;
+            int sum = this.Values.Aggregate(0, (total, grade) => total + grade);
+            double media = (double)sum / this.Values.Count;
 
             switch (media)
             {

@@ -10,8 +10,14 @@ namespace NotasAlunos.Service
 
         public async Task<StudentGradesOutputDto> SaveGrades(StudentGradesInputDto input, AppDbContext context)
         {
-            Student student = new Student(input.StudentName);
-            Subject subject = new Subject(input.SubjectName);
+            Student? student = await context.Students.SingleOrDefaultAsync(s => input.StudentName == s.StudentName);
+            if (student == null)
+                student = new Student(input.StudentName);
+            
+            Subject? subject = await context.Subjects.SingleOrDefaultAsync(s => s.SubjectName == input.StudentName);
+            if(subject == null)
+                subject = new Subject(input.SubjectName);
+                
             Grade grade = new Grade(input.Grade1, input.Grade2, input.Grade3, subject.IdSubject, student.IdStudent);
 
             await context.Students.AddAsync(student);

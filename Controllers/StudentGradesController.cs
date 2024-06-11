@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using NotasAlunos.Data;
 using NotasAlunos.Dtos;
-using NotasAlunos.Entities;
 using NotasAlunos.Service;
 
 namespace NotasAlunos.Controllers;
